@@ -1,0 +1,143 @@
+<div class="cont mat-elevation-z8">
+    <div class="alia">
+        <div class="txt">
+            <h2 class="title">Gestión de Proveedores</h2>
+            <p class="sub">Administra los proveedores</p>
+        </div>
+        <div class="fill">
+            <button mat-raised-button class="btn-agregar" (click)="goSupplierForm()">
+                <mat-icon>add</mat-icon>Agregar</button>
+            <button mat-raised-button class="btn-agregar" (click)="reportPdf()"> Generar Reporte</button>
+
+        </div>
+    </div>
+
+    <div class="summary-cards">
+        <div class="card">
+            <div class="card-content">
+                <div class="text">
+                    <h3>Total Proveedores</h3>
+                    <p class="number">{{ totalSuppliers }}</p>
+                    <span class="desc">Proveedores registrados</span>
+                </div>
+                <div class="icon">
+                    <mat-icon>apartment</mat-icon>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <div class="text">
+                    <h3>Proveedores Activos</h3>
+                    <p class="number">{{ totalActivos }}</p>
+                    <span class="desc">Actualmente disponibles</span>
+                </div>
+                <div class="icon">
+                    <mat-icon>check_circle</mat-icon>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <div class="text">
+                    <h3>Proveedores Inactivos</h3>
+                    <p class="number">{{ totalInactivos }}</p>
+                    <span class="desc">Fuera de servicio</span>
+                </div>
+                <div class="icon">
+                    <mat-icon>cancel</mat-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="top-bar">
+        <input matInput type="text" placeholder="Buscar proveedor" class="search-input" (keyup)="applyFilter($event)" />
+
+
+        <div class="right-actions">
+            <select [(ngModel)]="categoriaFiltro" (change)="filtrarPorCategoria($event)" class="catego">
+                <option value="todas">Todas</option>
+                <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+            </select>
+
+            <div class="state-toggle-filter">
+                <mat-button-toggle-group [(ngModel)]="estadoFiltro" (change)="filtrarPorEstado()" class="estado-toggle"
+                    name="estado" exclusive>
+
+                    <mat-button-toggle value="todos">Todos</mat-button-toggle>
+                    <mat-button-toggle value="A">Activos</mat-button-toggle>
+                    <mat-button-toggle value="I">Inactivos</mat-button-toggle>
+                </mat-button-toggle-group>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="table-container">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th (click)="sortBy('code')">N° Código <mat-icon *ngIf="sortColumn === 'code'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th (click)="sortBy('company')">Empresa <mat-icon *ngIf="sortColumn === 'company'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th (click)="sortBy('category')">Categoría <mat-icon *ngIf="sortColumn === 'category'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th (click)="sortBy('address')">Dirección <mat-icon *ngIf="sortColumn === 'address'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th (click)="sortBy('email_business')">Email <mat-icon *ngIf="sortColumn === 'email_business'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th (click)="sortBy('cell_phone')">N° Celular <mat-icon *ngIf="sortColumn === 'cell_phone'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th (click)="sortBy('ruc')">RUC <mat-icon *ngIf="sortColumn === 'ruc'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th (click)="sortBy('cooperation_date')">Fecha/Cooperación <mat-icon
+                                *ngIf="sortColumn === 'cooperation_date'">
+                                {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon></th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let supplier of filteredSuppliers">
+                        <td>{{ supplier.code }}</td>
+                        <td>{{ supplier.company | titlecase }}</td>
+                        <td>{{ supplier.category }}</td>
+                        <td>{{ supplier.address }}</td>
+                        <td>{{ supplier.email_business }}</td>
+                        <td>{{ supplier.cell_phone | cellNumber }}</td>
+                        <td>{{ supplier.ruc }}</td>
+                        <td>{{ supplier.cooperation_date | friendlyDate }}</td>
+                        <td>
+                            <span [ngClass]="supplier.state === 'A' ? 'estado-activo' : 'estado-inactivo'">
+                                {{ supplier.state === 'A' ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button mat-button color="primary" (click)="onEdit(supplier)" class="btn-modificar"
+                                [disabled]="supplier.state !== 'A'"><mat-icon>edit</mat-icon></button>
+                            <button mat-button [color]="supplier.state === 'A' ? 'warn' : 'accent'"
+                                (click)="supplier.state === 'A' ? onDelete(supplier.identifier) : onRestore(supplier.identifier)">
+                                <mat-icon>{{ supplier.state === 'A' ? 'delete' : 'restorer' }}</mat-icon>
+                            </button>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <app-alert [message]="alertMessage" [type]="alertType" [visible]="showAlert" [confirm]="confirmAlert"
+        (close)="showAlert = false" (confirmResult)="handleAlertConfirm($event)">
+    </app-alert>
+
+</div>
