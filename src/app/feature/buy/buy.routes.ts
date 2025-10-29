@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-    {
-    path: '',
-    loadComponent: () => import('./buy-list/buy-list').then(c => c.BuyList)
+  {
+    path: 'form',           // Para creación de nueva compra
+    loadComponent: () => import('./buy-form/buy-form').then(c => c.BuyForm)
   },
   {
-    path: 'form/:id',
+    path: 'form/:id',       // Para editar o ver detalles
     loadComponent: () => import('./buy-form/buy-form').then(c => c.BuyForm)
   }
 ]
