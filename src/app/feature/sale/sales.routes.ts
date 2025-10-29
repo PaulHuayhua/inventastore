@@ -7,7 +7,7 @@ export const routes: Routes = [
     path: '',
     loadComponent: () =>
       import('./sale-list/sale-list.component').then(c => c.SaleListComponent),
-    resolve: { sales: SaleListResolver } // Carga listado de ventas
+    resolve: { sales: SaleListResolver }
   },
   {
     path: 'form',
@@ -18,6 +18,6 @@ export const routes: Routes = [
     path: 'form/:id',
     loadComponent: () =>
       import('./sale-form/sale-form.component').then(c => c.SaleForm),
-    resolve: { sale: SaleEditResolver } // Carga venta específica por id
+    resolve: { sale: SaleEditResolver }
   }
 ];

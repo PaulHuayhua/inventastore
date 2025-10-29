@@ -1,42 +1,46 @@
-// src/app/core/services/sale.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable, forkJoin, map, switchMap } from 'rxjs';
-import { Sale, SaleWithDetails, SaleDetail } from '../interfaces/sale';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { Sale, SaleWithDetails, SaleCreate } from '../interfaces/sale';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SaleService {
   private http = inject(HttpClient);
-  private baseUrl = `${environment.urlBackEnd}/v1/api/sale`;
+  private urlBackEnd = `${environment.urlBackEnd}/v1/api/sale`;
 
-  // Obtener todas las ventas
+  // Para compartir la venta seleccionada entre componentes
+  private selectedSaleSubject = new BehaviorSubject<SaleWithDetails | null>(null);
+  selectedSale$ = this.selectedSaleSubject.asObservable();
+
+  setSelectedSale(sale: SaleWithDetails | null): void {
+    this.selectedSaleSubject.next(sale);
+  }
+
+  // Obtener todas las ventas con detalles
   getSales(): Observable<SaleWithDetails[]> {
-    return this.http.get<Sale[]>(this.baseUrl).pipe(
-      switchMap(sales => {
-        const salesWithDetails$ = sales.map(sale =>
-          this.getSaleById(sale.identifier).pipe(
-            map(fullSale => ({
-              ...sale,
-              code: fullSale.identifier.toString(),
-              details: fullSale.details || []
-            }))
-          )
-        );
-        return forkJoin(salesWithDetails$);
-      })
-    );
+    return this.http.get<SaleWithDetails[]>(this.urlBackEnd);
   }
 
-  // Obtener venta por ID
+  // Obtener una venta por su ID
   getSaleById(id: number): Observable<SaleWithDetails> {
-    return this.http.get<SaleWithDetails>(`${this.baseUrl}/${id}`);
+    return this.http.get<SaleWithDetails>(`${this.urlBackEnd}/${id}`);
   }
 
-  // Crear venta
-  createSale(sale: SaleWithDetails): Observable<Sale> {
-    return this.http.post<Sale>(this.baseUrl, sale);
+  // Registrar una nueva venta
+  createSale(sale: SaleCreate): Observable<SaleWithDetails> {
+    return this.http.post<SaleWithDetails>(`${this.urlBackEnd}/save`, sale);
+  }
+
+  // Actualizar una venta existente
+  updateSale(id: number, sale: SaleCreate): Observable<SaleWithDetails> {
+    return this.http.put<SaleWithDetails>(`${this.urlBackEnd}/update/${id}`, sale);
+  }
+
+  // Generar PDF de una venta
+  reportPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.urlBackEnd}/pdf/${id}`, { responseType: 'blob' });
   }
 }

@@ -1,14 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { RouterModule, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { SaleService } from '../../../core/services/sale.service';
 import { CustomerService } from '../../../core/services/customer.service';
 import { ProductService } from '../../../core/services/product';
 import { UserService } from '../../../core/services/user.service';
-import { SaleWithDetails, SaleDetail } from '../../../core/interfaces/sale';
-import { Customer } from '../../../core/interfaces/customer';
-import { Product } from '../../../core/interfaces/product';
-import { User } from '../../../core/interfaces/user';
-import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { SaleWithDetails } from '../../../core/interfaces/sale';
 
 @Component({
   selector: 'app-sale-list',
@@ -19,9 +16,9 @@ import { RouterModule, Router } from '@angular/router';
 })
 export class SaleListComponent implements OnInit {
   sales: SaleWithDetails[] = [];
-  customers: Customer[] = [];
-  products: Product[] = [];
-  users: User[] = [];
+  customerMap = new Map<number, string>();
+  productMap = new Map<number, string>();
+  userMap = new Map<number, string>();
 
   constructor(
     private saleService: SaleService,
@@ -35,47 +32,48 @@ export class SaleListComponent implements OnInit {
     this.loadAllData();
   }
 
-  loadAllData(): void {
-    this.saleService.getSales().subscribe((sales: SaleWithDetails[]) => {
+  private loadAllData(): void {
+    this.customerService.getCustomers().subscribe(customers => {
+      customers.forEach(c => this.customerMap.set(c.identifier, `${c.first_name} ${c.last_name}`));
+    });
+
+    this.productService.findAll().subscribe(products => {
+      products.forEach(p => {
+        if (p.identifier != null) { // asegura que no sea undefined
+          this.productMap.set(p.identifier, p.name);
+        }
+      });
+    });
+¡
+    this.userService.getAll().subscribe(users => {
+      users.forEach(u => this.userMap.set(u.identifier, u.name));
+    });
+
+    this.saleService.getSales().subscribe(sales => {
       this.sales = sales;
     });
-
-    this.customerService.getCustomers().subscribe(customers => {
-      this.customers = customers.map(c => ({
-        ...c,
-        fullName: `${c.first_name} ${c.last_name}`
-      }));
-    });
-
-    this.productService.findAll().subscribe(products => this.products = products);
-
-    this.userService.getAll().subscribe(users => this.users = users);
   }
 
-  getCustomerName(id: number | undefined): string {
-    const customer = this.customers.find(c => c.identifier === id);
-    return customer?.fullName ?? 'Desconocido';
+  getCustomerName(id?: number): string {
+    if (id == null) return 'Desconocido';
+    return this.customerMap.get(id) ?? 'Desconocido';
   }
 
-  getUserName(id: number | undefined): string {
-    const user = this.users.find(u => u.identifier === id);
-    return user?.name ?? 'Desconocido';
+  getUserName(id?: number): string {
+    if (id == null) return 'Desconocido';
+    return this.userMap.get(id) ?? 'Desconocido';
   }
 
-  getProductName(id: number | undefined): string {
-    const product = this.products.find(p => p.identifier === id);
-    return product?.name ?? 'Desconocido';
+  getProductName(id?: number): string {
+    if (id == null) return 'Desconocido';
+    return this.productMap.get(id) ?? 'Desconocido';
   }
 
-viewSale(sale: SaleWithDetails): void {
-  // Navega al formulario en modo solo lectura
-  this.router.navigate(['sales/form', sale.identifier], { queryParams: { view: true } });
-}
+  viewSale(sale: SaleWithDetails): void {
+    this.router.navigate(['sales/form', sale.identifier], { queryParams: { view: true } });
+  }
 
-editSale(sale: SaleWithDetails): void {
-  // Navega al formulario en modo edición
-  this.router.navigate(['sales/form', sale.identifier]);
-}
-
-
+  editSale(sale: SaleWithDetails): void {
+    this.router.navigate(['sales/form', sale.identifier]);
+  }
 }

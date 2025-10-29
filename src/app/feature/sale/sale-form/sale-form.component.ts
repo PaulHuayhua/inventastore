@@ -12,6 +12,8 @@ import { Alert } from '../../../shared/components/alert/alert';
 import { UserService } from '../../../core/services/user.service';
 import { CustomerService } from '../../../core/services/customer.service';
 import { ProductService } from '../../../core/services/product';
+import { SaleService } from '../../../core/services/sale.service';
+import { SaleDetail } from '../../../core/interfaces/sale';
 
 @Component({
   selector: 'app-sale-form',
@@ -31,8 +33,8 @@ export class SaleForm implements OnInit {
   customers: any[] = [];
   products: any[] = [];
 
-  detalles: any[] = [];
-  detalle = { product_identifier: '', amount: 0, unitPrice: 0, subtotal: 0 };
+  detalles: SaleDetail[] = [];
+  detalle: SaleDetail = { productIdentifier: 0, amount: 0, subtotal: 0 };
 
   displayedDetailColumns: string[] = [];
   showAlert = false;
@@ -46,11 +48,12 @@ export class SaleForm implements OnInit {
     private route: ActivatedRoute,
     private userService: UserService,
     private customerService: CustomerService,
-    private productService: ProductService
+    private productService: ProductService,
+    private saleService: SaleService
   ) {
     this.form = this.fb.group({
-      user_identifier: ['', Validators.required],
-      customer_identifier: ['', Validators.required],
+      user_identifier: [null, Validators.required],
+      customer_identifier: [null, Validators.required],
       payment_method: ['', Validators.required]
     });
   }
@@ -72,17 +75,16 @@ export class SaleForm implements OnInit {
   }
 
   calcularSubtotal() {
-    this.detalle.subtotal = +this.detalle.amount * +this.detalle.unitPrice;
+    this.detalle.subtotal = this.detalle.amount * (this.detalle.unitPrice ?? 0);
   }
 
   agregarDetalle() {
-    if (!this.detalle.product_identifier || this.detalle.amount <= 0 || this.detalle.unitPrice <= 0) {
+    if (!this.detalle.productIdentifier || this.detalle.amount <= 0 || (this.detalle.unitPrice ?? 0) <= 0) {
       this.showAlertMessage('Completa correctamente los campos del detalle', 'warning');
       return;
     }
-
     this.detalles.push({ ...this.detalle });
-    this.detalle = { product_identifier: '', amount: 0, unitPrice: 0, subtotal: 0 };
+    this.detalle = { productIdentifier: 0, amount: 0, subtotal: 0 };
   }
 
   eliminarDetalle(index: number) {
@@ -94,8 +96,9 @@ export class SaleForm implements OnInit {
     return this.detalles.reduce((acc, det) => acc + det.subtotal, 0);
   }
 
-  getNombreProducto(id: any) {
-    return this.products.find(p => p.identifier === id)?.name || 'Desconocido';
+  getNombreProducto(id?: number) {
+    if (id == null) return 'Desconocido';
+    return this.products.find(p => p.identifier === id)?.name ?? 'Desconocido';
   }
 
   onlyNumbers(event: KeyboardEvent) {
@@ -111,13 +114,11 @@ export class SaleForm implements OnInit {
       this.showAlertMessage('Completa todos los campos antes de registrar', 'warning');
       return;
     }
-
     this.showAlertMessage('¿Deseas registrar esta venta?', 'info', true);
   }
 
   handleAlertConfirm(confirmed: boolean) {
     if (!confirmed) return;
-    // Guardar venta
     this.showAlertMessage('Venta registrada exitosamente', 'success');
     setTimeout(() => this.onCancel(), 2500);
   }

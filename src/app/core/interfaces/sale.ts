@@ -23,6 +23,7 @@ export interface SaleDetail {
   productIdentifier: number;
   amount: number;
   subtotal: number;
+  unitPrice?: number;
 }
 
 export interface SaleCreate {

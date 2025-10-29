@@ -28,13 +28,13 @@
         <ng-container *ngFor="let sale of sales">
           <tr *ngFor="let detail of sale.details">
             <td>{{ sale.code }}</td>
-            <td>{{ sale.issueDate | date: 'shortDate' }}</td>
+            <td>{{ sale.issueDate | date:'shortDate' }}</td>
             <td>{{ sale.paymentMethod }}</td>
             <td>{{ getCustomerName(sale.customerIdentifier) }}</td>
             <td>{{ getUserName(sale.userIdentifier) }}</td>
             <td>{{ getProductName(detail.productIdentifier) }}</td>
             <td>{{ detail.amount }}</td>
-            <td>S/ {{ detail.subtotal | number: '1.2-2' }}</td>
+            <td>S/ {{ detail.subtotal | number:'1.2-2' }}</td>
             <td>
               <button class="action-btn view" (click)="viewSale(sale)">
                 <span class="material-icons">visibility</span>
