@@ -7,47 +7,46 @@ import { roleGuard } from './core/guards/role-guard';
 export const routes: Routes = [
   {
     path: 'auth/login',
-    component: LoginPage,
+    component: LoginPage
   },
   {
     path: '',
     component: AdminLayout,
-    canActivate: [authGuard],
-    canActivateChild: [roleGuard],
+    canActivate: [authGuard], // protege todo el layout
     children: [
       {
-        path: 'suppliers',
-        loadChildren: () =>
-          import('./feature/supplier/supplier.routes').then((m) => m.routes),
+        path: 'buys',
+        loadChildren: () => import('./feature/buy/buy.routes').then(m => m.routes),
         data: { roles: ['Administrador'] },
+        canActivate: [roleGuard]
+      },
+      {
+        path: 'suppliers',
+        loadChildren: () => import('./feature/supplier/supplier.routes').then(m => m.routes),
+        data: { roles: ['Administrador'] },
+        canActivate: [roleGuard]
       },
       {
         path: 'products',
-        loadChildren: () =>
-          import('./feature/product/product.routes').then((m) => m.routes),
+        loadChildren: () => import('./feature/product/product.routes').then(m => m.routes),
         data: { roles: ['Administrador'] },
-      },
-      {
-        path: 'buys',
-        loadChildren: () =>
-          import('./feature/buy/buy.routes').then((m) => m.routes),
-        data: { roles: ['Administrador'] },
+        canActivate: [roleGuard]
       },
       {
         path: 'sales',
-        loadChildren: () =>
-          import('./feature/sale/sales.routes').then((m) => m.routes),
+        loadChildren: () => import('./feature/sale/sales.routes').then(m => m.routes),
         data: { roles: ['Administrador'] },
+        canActivate: [roleGuard]
       },
       {
         path: '',
         redirectTo: 'products',
-        pathMatch: 'full',
-      },
-    ],
+        pathMatch: 'full'
+      }
+    ]
   },
   {
     path: '**',
-    redirectTo: 'auth/login',
-  },
+    redirectTo: 'auth/login'
+  }
 ];

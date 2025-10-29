@@ -91,12 +91,6 @@ export class BuyList implements OnInit, AfterViewInit {
     this.dataSource.filter = filterValue;
   }
 
-  goBuyForm(): void {
-  this.buyService.setSelectedBuy(null);
-  this.router.navigate(['buys', 'form']);  // Path para crear nueva compra
-  }
-
-
 
   reportPdf(id: number) {
     this.buyService.reportPdf(id).subscribe(blob => {
@@ -109,10 +103,16 @@ export class BuyList implements OnInit, AfterViewInit {
     });
   }
 
-  verDetalle(buy: Buy): void {
-    this.router.navigate(['buys', 'form', buy.identifier], {
-      queryParams: { view: true }
-    });
-  }
+goBuyForm(): void {
+  this.buyService.setSelectedBuy(null);
+  this.router.navigate(['buys', 'form']); // nueva compra
+}
+
+verDetalle(buy: Buy): void {
+  this.router.navigate(['buys', 'form', buy.identifier], {
+    queryParams: { view: true } // ver detalle
+  });
+}
+
 
 }
