@@ -1,0 +1,51 @@
+<div class="sale-list-container">
+  <div class="top-bar">
+    <h2 class="title">Listado de Ventas</h2>
+    <div class="right-actions">
+      <button class="btn-agregar" [routerLink]="['form']">
+        <span class="material-icons">add_circle</span>
+        Nueva Venta
+      </button>
+    </div>
+  </div>
+
+  <div class="sale-table">
+    <table class="mat-elevation-z2">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Método de Pago</th>
+          <th>Cliente</th>
+          <th>Vendedor</th>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let sale of sales">
+          <tr *ngFor="let detail of sale.details">
+            <td>{{ sale.code }}</td>
+            <td>{{ sale.issueDate | date: 'shortDate' }}</td>
+            <td>{{ sale.paymentMethod }}</td>
+            <td>{{ getCustomerName(sale.customerIdentifier) }}</td>
+            <td>{{ getUserName(sale.userIdentifier) }}</td>
+            <td>{{ getProductName(detail.productIdentifier) }}</td>
+            <td>{{ detail.amount }}</td>
+            <td>S/ {{ detail.subtotal | number: '1.2-2' }}</td>
+            <td>
+              <button class="action-btn view" (click)="viewSale(sale)">
+                <span class="material-icons">visibility</span>
+              </button>
+              <button class="action-btn edit" (click)="editSale(sale)">
+                <span class="material-icons">edit</span>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</div>

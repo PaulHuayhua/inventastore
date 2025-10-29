@@ -1,0 +1,152 @@
+<div class="div-container mat-elevation-z4">
+  <div class="borde">
+    <h1>{{ isReadOnly ? 'Detalles de la Venta' : 'Registrar Nueva Venta' }}</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-container">
+    <div class="form-gred">
+      <h3>Información de la venta</h3>
+      <div class="form-grid">
+        <!-- Cliente -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Cliente</mat-label>
+          <mat-select formControlName="customer_identifier">
+            <mat-option *ngFor="let c of customers" [value]="c.identifier">
+              {{ c.first_name }} {{ c.last_name }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('customer_identifier')?.hasError('required')">
+            El cliente es obligatorio
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Usuario -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Registrado por</mat-label>
+          <mat-select formControlName="user_identifier">
+            <mat-option *ngFor="let u of users" [value]="u.identifier">
+              {{ u.name }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('user_identifier')?.hasError('required')">
+            El encargado es obligatorio
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Método de pago -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Método de pago</mat-label>
+          <mat-select formControlName="payment_method">
+            <mat-option value="Efectivo">Efectivo</mat-option>
+            <mat-option value="Yape">Yape</mat-option>
+            <mat-option value="Transferencia">Transferencia</mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('payment_method')?.hasError('required')">
+            El método de pago es obligatorio
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="borde"></div>
+
+      <h3>Productos vendidos</h3>
+      <div *ngIf="!isReadOnly" class="form-grid">
+        <!-- Producto -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Producto</mat-label>
+          <mat-select [(ngModel)]="detalle.product_identifier" name="product_identifier"
+            [ngModelOptions]="{ standalone: true }" required #prod="ngModel">
+            <mat-option *ngFor="let p of products" [value]="p.identifier">
+              {{ p.name }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="prod.errors?.['required']">El producto es obligatorio</mat-error>
+        </mat-form-field>
+
+        <!-- Cantidad -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Cantidad</mat-label>
+          <input matInput [(ngModel)]="detalle.amount" name="amount" [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="calcularSubtotal()" (keypress)="onlyNumbers($event)" min="1" required #amt="ngModel">
+          <mat-error *ngIf="amt.errors?.['required']">La cantidad es obligatoria</mat-error>
+          <mat-error *ngIf="amt.errors?.['min']">La cantidad debe ser mayor a 0</mat-error>
+        </mat-form-field>
+
+        <!-- Precio Unitario -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Precio Unitario</mat-label>
+          <input matInput [(ngModel)]="detalle.unitPrice" name="unitPrice" [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="calcularSubtotal()" (keypress)="onlyDecimal($event)" min="0.01" required #price="ngModel">
+          <mat-error *ngIf="price.errors?.['required']">El precio es obligatorio</mat-error>
+          <mat-error *ngIf="price.errors?.['min']">El precio debe ser mayor a 0</mat-error>
+        </mat-form-field>
+
+        <!-- Subtotal -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Subtotal</mat-label>
+          <input matInput [value]="detalle.subtotal | number:'1.2-2'" readonly>
+        </mat-form-field>
+
+        <!-- Botón agregar detalle -->
+        <button mat-raised-button color="primary" type="button" (click)="agregarDetalle()">
+          Agregar Detalle
+        </button>
+      </div>
+
+      <!-- Tabla de detalles -->
+      <table mat-table [dataSource]="detalles" class="mat-elevation-z8 full-width" *ngIf="detalles.length > 0">
+        <ng-container matColumnDef="producto">
+          <th mat-header-cell *matHeaderCellDef>Producto</th>
+          <td mat-cell *matCellDef="let d"> {{ getNombreProducto(d.product_identifier) }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="cantidad">
+          <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+          <td mat-cell *matCellDef="let d"> {{ d.amount }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="precio">
+          <th mat-header-cell *matHeaderCellDef>Precio Unitario</th>
+          <td mat-cell *matCellDef="let d"> S/ {{ d.unitPrice | number:'1.2-2' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="subtotal">
+          <th mat-header-cell *matHeaderCellDef>Subtotal</th>
+          <td mat-cell *matCellDef="let d"> S/ {{ d.subtotal | number:'1.2-2' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="accion">
+          <th mat-header-cell *matHeaderCellDef>Acción</th>
+          <td mat-cell *matCellDef="let d; let i = index;">
+            <button mat-icon-button color="warn" type="button" (click)="eliminarDetalle(i)" *ngIf="!isReadOnly">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedDetailColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedDetailColumns;"></tr>
+      </table>
+
+      <!-- Total -->
+      <div class="total-general" *ngIf="detalles.length > 0" style="margin-top: 1rem;">
+        <strong>Total de la Venta: </strong> S/ {{ calcularTotalVenta() | number:'1.2-2' }}
+      </div>
+    </div>
+
+    <!-- Botones acción -->
+    <div class="form-actions">
+      <button mat-raised-button color="warn" type="button" (click)="onCancel()">
+        {{ isReadOnly ? 'Volver' : 'Cancelar' }}
+      </button>
+      <button *ngIf="!isReadOnly" mat-raised-button color="primary" type="submit"
+        [disabled]="form.invalid || detalles.length === 0">
+        Registrar
+      </button>
+    </div>
+  </form>
+
+  <app-alert [message]="alertMessage" [type]="alertType" [visible]="showAlert" [confirm]="confirmAlert"
+    (close)="showAlert = false" (confirmResult)="handleAlertConfirm($event)">
+  </app-alert>
+</div>

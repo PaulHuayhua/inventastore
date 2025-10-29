@@ -1,12 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Router, RouterLink, ActivatedRoute} from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { Alert } from '../../../shared/components/alert/alert';
 import { ProductService } from '../../../core/services/product';
 import { Product } from '../../../core/interfaces/product';
+import { Alert } from '../../../shared/components/alert/alert';
 import { FriendlyDatePipe } from '../../../core/pipes/friendly-date.pipe';
 import { PenCurrencyPipe } from '../../../core/pipes/pen-currency.pipe';
 
@@ -15,8 +15,8 @@ import { PenCurrencyPipe } from '../../../core/pipes/pen-currency.pipe';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     FormsModule,
+    RouterLink,
     MatIconModule,
     MatTableModule,
     Alert,
@@ -27,47 +27,34 @@ import { PenCurrencyPipe } from '../../../core/pipes/pen-currency.pipe';
   styleUrls: ['./product-list.scss']
 })
 export class ProductList implements OnInit {
-  dataSource = new MatTableDataSource<Product>([]);  
-  displayedColumns: string[] = [
-    'identifier', 'code', 'name', 'description', 'volumeWeight', 'unitMeasure', 'stock', 
-    'price', 'expiration_date', 'category', 'state', 'acciones'
-  ];
-
-  // Lista original completa
+  dataSource = new MatTableDataSource<Product>([]);
   private products: Product[] = [];
 
-  // Indicadores
-  totalProductos: number = 0;
-  productosActivos: number = 0;
-  stockBajo: number = 0;
-  sinStock: number = 0;
-  valorTotal: number = 0;
+  totalProductos = 0;
+  productosActivos = 0;
+  stockBajo = 0;
+  sinStock = 0;
+  valorTotal = 0;
 
-  showAlert: boolean = false;
-  confirmAlert: boolean = false;
-  alertMessage: string = '';
+  estadoFiltro: 'todos' | 'activo' | 'inactivo' = 'todos';
+  textoFiltro = '';
+  categoriaFiltro = 'todas';
+  categorias: string[] = [];
+
+  showAlert = false;
+  confirmAlert = false;
+  alertMessage = '';
   alertType: 'success' | 'error' | 'info' | 'warning' = 'info';
   productToDelete: Product | null = null;
 
-  estadoFiltro: 'todos' | 'activo' | 'inactivo' = 'todos';
-  textoFiltro: string = '';
-
-  private productService = inject(ProductService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private productService = inject(ProductService);
 
   ngOnInit() {
     this.route.data.subscribe(({ products }) => {
       this.products = products;
-      this.applyAllFilters();
-      this.calcularIndicadores();
-    });
-  }
-
-
-  loadProducts(): void {
-    this.productService.findAll().subscribe((data: Product[]) => {
-      this.products = data;
+      this.categorias = [...new Set(this.products.map(p => p.category))];
       this.applyAllFilters();
       this.calcularIndicadores();
     });
@@ -76,15 +63,16 @@ export class ProductList implements OnInit {
   applyAllFilters(): void {
     let filtered = [...this.products];
 
-    // Filtrado por estado
-    filtered = filtered.filter(p => {
-      if (this.estadoFiltro === 'todos') return true;
-      if (this.estadoFiltro === 'activo') return p.state === 'A';
-      if (this.estadoFiltro === 'inactivo') return p.state === 'I';
-      return true;
-    });
+    if (this.estadoFiltro !== 'todos') {
+      filtered = filtered.filter(p =>
+        this.estadoFiltro === 'activo' ? p.state === 'A' : p.state === 'I'
+      );
+    }
 
-    // Filtrado por texto
+    if (this.categoriaFiltro !== 'todas') {
+      filtered = filtered.filter(p => p.category === this.categoriaFiltro);
+    }
+
     const texto = this.textoFiltro.trim().toLowerCase();
     if (texto) {
       filtered = filtered.filter(p =>
@@ -98,14 +86,6 @@ export class ProductList implements OnInit {
     this.calcularIndicadores();
   }
 
-  private calcularIndicadores(): void {
-    this.totalProductos = this.products.length;
-    this.productosActivos = this.products.filter(p => p.state === 'A').length;
-    this.stockBajo = this.products.filter(p => p.stock > 0 && p.stock <= 5).length;
-    this.sinStock = this.products.filter(p => p.stock === 0).length;
-    this.valorTotal = this.products.reduce((acc, p) => acc + (p.stock * p.price), 0);
-  }
-
   applyFilter(event: Event) {
     this.textoFiltro = (event.target as HTMLInputElement).value;
     this.applyAllFilters();
@@ -115,8 +95,16 @@ export class ProductList implements OnInit {
     this.applyAllFilters();
   }
 
+  private calcularIndicadores() {
+    this.totalProductos = this.products.length;
+    this.productosActivos = this.products.filter(p => p.state === 'A').length;
+    this.stockBajo = this.products.filter(p => p.stock > 0 && p.stock <= 5).length;
+    this.sinStock = this.products.filter(p => p.stock === 0).length;
+    this.valorTotal = this.products.reduce((acc, p) => acc + (p.stock * p.price), 0);
+  }
+
   onEdit(product: Product) {
-    this.router.navigate(['/product-form', product.identifier]);
+    this.router.navigate(['form', product.identifier], { relativeTo: this.route });
   }
 
   onDelete(product: Product) {
@@ -145,22 +133,16 @@ export class ProductList implements OnInit {
         : this.productService.restoreProduct(id);
 
       request$.subscribe({
-        next: (updatedProduct) => {
+        next: updated => {
           this.products = this.products.map(p =>
-            p.identifier === updatedProduct.identifier ? updatedProduct : p
+            p.identifier === updated.identifier ? updated : p
           );
           this.applyAllFilters();
-
-          const mensaje = esActivo
-            ? 'Producto desactivado correctamente'
-            : 'Producto restaurado correctamente';
-          this.setAlert(mensaje, 'success');
-
-          this.productToDelete = null;
+          this.setAlert(esActivo ? 'Producto desactivado' : 'Producto restaurado', 'success');
         },
-        error: (err) => {
-          this.setAlert('Error al actualizar el estado del producto.', 'error');
+        error: err => {
           console.error(err);
+          this.setAlert('Error al actualizar el producto.', 'error');
         }
       });
     }
@@ -169,49 +151,29 @@ export class ProductList implements OnInit {
     this.confirmAlert = false;
   }
 
-  handleCancel() {
-    this.confirmAlert = false;
-    this.productToDelete = null;
-    this.showAlert = false;
-  }
-
   setAlert(message: string, type: 'success' | 'error' | 'info' | 'warning') {
-    this.showAlert = false;
-    setTimeout(() => {
-      this.alertMessage = message;
-      this.alertType = type;
-      this.showAlert = true;
-      setTimeout(() => {
-        this.showAlert = false;
-      }, 3000);
-    }, 0);
-  }
-
-  goProductForm() {
-    this.router.navigate(['/product-form']);
+    this.alertMessage = message;
+    this.alertType = type;
+    this.showAlert = true;
+    setTimeout(() => (this.showAlert = false), 3000);
   }
 
   reportPdf() {
     this.productService.reportPdf().subscribe(blob => {
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'reporte_producto.pdf';
-      link.click();
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'reporte_producto.pdf';
+      a.click();
       URL.revokeObjectURL(url);
     });
   }
 
   sortData(column: keyof Product) {
-    if (!this.dataSource) return;
-
     this.dataSource.data.sort((a, b) => {
       const valA = a[column] ?? '';
       const valB = b[column] ?? '';
-      if (typeof valA === 'string' && typeof valB === 'string') {
-        return valA.localeCompare(valB);
-      }
-      return (valA as any) > (valB as any) ? 1 : -1;
+      return valA > valB ? 1 : valA < valB ? -1 : 0;
     });
   }
 }

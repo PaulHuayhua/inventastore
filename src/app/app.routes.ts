@@ -5,13 +5,10 @@ import { authGuard } from './core/guards/auth-guard';
 import { roleGuard } from './core/guards/role-guard';
 
 export const routes: Routes = [
-  // 🔐 Página de login
   {
     path: 'auth/login',
     component: LoginPage,
   },
-
-  // 🧱 Área principal protegida
   {
     path: '',
     component: AdminLayout,
@@ -28,7 +25,19 @@ export const routes: Routes = [
         path: 'products',
         loadChildren: () =>
           import('./feature/product/product.routes').then((m) => m.routes),
-        data: { roles: ['Administrador','Empleado'] },
+        data: { roles: ['Administrador'] },
+      },
+      {
+        path: 'buys',
+        loadChildren: () =>
+          import('./feature/buy/buy.routes').then((m) => m.routes),
+        data: { roles: ['Administrador'] },
+      },
+      {
+        path: 'sales',
+        loadChildren: () =>
+          import('./feature/sale/sales.routes').then((m) => m.routes),
+        data: { roles: ['Administrador'] },
       },
       {
         path: '',
@@ -37,8 +46,6 @@ export const routes: Routes = [
       },
     ],
   },
-
-  // 🚫 Rutas no encontradas
   {
     path: '**',
     redirectTo: 'auth/login',

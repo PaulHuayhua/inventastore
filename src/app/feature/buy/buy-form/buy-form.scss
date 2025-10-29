@@ -1,0 +1,127 @@
+// Contenedor principal
+.div-container {
+  background-color: #fff;
+  padding: 1rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(60, 60, 60, 0.08);
+  max-width: 60%;
+  margin: 1rem auto;
+  font-size: 0.875rem;
+
+  .borde{
+    border-bottom: 1px solid rgb(209, 188, 7);
+    padding-left: 1rem;
+  }
+
+  h1 {
+    color: #6D2423;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+    border-left: 3px solid rgb(209, 188, 7);
+    padding-left: 1rem;
+  }
+  h3 {
+    color: #6D2423;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    border-left: 3px solid rgb(209, 188, 7);
+    padding-left: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-container {
+    max-width: 100%;
+    margin: 1rem auto;
+    padding: 2rem 2rem;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .form-gred{
+    display: block;
+
+    th{
+      background-color:#6D2423;
+      color: #fff;
+    }
+
+    .total-general{
+      font-size: 1rem;
+      
+      strong{
+        color: #6D2423;
+      }
+    }
+  }
+  
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px 24px;
+
+    button {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      max-width: 8rem;
+      border-radius: 6px;
+      background-color: #6D2423;
+      color: #fff;
+      &:hover {
+        background-color: #581e1d;
+      }
+    }
+  }
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 8px;
+
+    button {
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 6px;
+      background-color: #6D2423;
+      color: #fff;
+      &:hover {
+        background-color: #581e1d;
+      }
+    }
+
+    button[color="warn"] {
+      border: 1px solid #6D2423;
+      color: #6D2423;
+      background-color: transparent;
+
+      &:hover {
+        background-color: rgba(109, 36, 35, 0.08);
+      }
+    }
+
+  }
+
+  @media (max-width: 700px) {
+    .form-container {
+      padding: 16px;
+      margin: 16px;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+}

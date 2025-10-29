@@ -4,9 +4,7 @@ import { productResolver } from '../../core/resolvers/product.resolver';
 export const routes: Routes = [
   {
     path: '',
-    resolve: {
-      products: productResolver,
-    },
+    resolve: { products: productResolver },
     loadComponent: () =>
       import('./product-list/product-list').then((c) => c.ProductList),
   },
