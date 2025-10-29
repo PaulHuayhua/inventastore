@@ -93,7 +93,7 @@ export class BuyList implements OnInit, AfterViewInit {
 
   goBuyForm(): void {
     this.buyService.setSelectedBuy(null);
-    this.router.navigate(['buys', 'form']);
+    this.router.navigate(['form']);
   }
 
 
