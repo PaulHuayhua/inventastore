@@ -44,7 +44,7 @@ export class SaleListComponent implements OnInit {
         }
       });
     });
-¡
+
     this.userService.getAll().subscribe(users => {
       users.forEach(u => this.userMap.set(u.identifier, u.name));
     });
