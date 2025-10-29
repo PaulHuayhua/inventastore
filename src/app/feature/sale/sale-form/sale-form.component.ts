@@ -164,13 +164,13 @@ export class SaleFormComponent implements OnInit {
     ).subscribe({
       next: () => {
         alert('Venta registrada correctamente');
-        this.router.navigate(['/sale-list']);
+        this.router.navigate(['/sales']);
       },
       error: () => alert('No se pudo registrar la venta')
     });
   }
 
   cancel(): void {
-    this.router.navigate(['/sale-list']);
+    this.router.navigate(['/sales']);
   }
 }
