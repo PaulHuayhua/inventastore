@@ -23,7 +23,7 @@ export interface SaleDetail {
   productIdentifier: number;
   amount: number;
   subtotal: number;
-  unitPrice?: number;
+  unitPrice?: number; // opcional para form
 }
 
 export interface SaleCreate {

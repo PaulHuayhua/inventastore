@@ -12,12 +12,12 @@ export const routes: Routes = [
   {
     path: 'form',
     loadComponent: () =>
-      import('./sale-form/sale-form.component').then(c => c.SaleForm)
+      import('./sale-form/sale-form.component').then(c => c.SaleFormComponent)
   },
   {
     path: 'form/:id',
     loadComponent: () =>
-      import('./sale-form/sale-form.component').then(c => c.SaleForm),
+      import('./sale-form/sale-form.component').then(c => c.SaleFormComponent),
     resolve: { sale: SaleEditResolver }
   }
 ];

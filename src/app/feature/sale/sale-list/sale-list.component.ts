@@ -34,19 +34,15 @@ export class SaleListComponent implements OnInit {
 
   private loadAllData(): void {
     this.customerService.getCustomers().subscribe(customers => {
-      customers.forEach(c => this.customerMap.set(c.identifier, `${c.first_name} ${c.last_name}`));
+      customers.forEach(c => this.customerMap.set(c.identifier!, `${c.first_name} ${c.last_name}`));
     });
 
     this.productService.findAll().subscribe(products => {
-      products.forEach(p => {
-        if (p.identifier != null) { // asegura que no sea undefined
-          this.productMap.set(p.identifier, p.name);
-        }
-      });
+      products.forEach(p => this.productMap.set(p.identifier!, p.name));
     });
 
     this.userService.getAll().subscribe(users => {
-      users.forEach(u => this.userMap.set(u.identifier, u.name));
+      users.forEach(u => this.userMap.set(u.identifier!, u.name));
     });
 
     this.saleService.getSales().subscribe(sales => {
@@ -55,18 +51,15 @@ export class SaleListComponent implements OnInit {
   }
 
   getCustomerName(id?: number): string {
-    if (id == null) return 'Desconocido';
-    return this.customerMap.get(id) ?? 'Desconocido';
+    return id ? this.customerMap.get(id) ?? 'Desconocido' : 'Desconocido';
   }
 
   getUserName(id?: number): string {
-    if (id == null) return 'Desconocido';
-    return this.userMap.get(id) ?? 'Desconocido';
+    return id ? this.userMap.get(id) ?? 'Desconocido' : 'Desconocido';
   }
 
   getProductName(id?: number): string {
-    if (id == null) return 'Desconocido';
-    return this.productMap.get(id) ?? 'Desconocido';
+    return id ? this.productMap.get(id) ?? 'Desconocido' : 'Desconocido';
   }
 
   viewSale(sale: SaleWithDetails): void {
